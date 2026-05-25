@@ -1,0 +1,20 @@
+{
+  "samples": 32,
+  "accuracy": 0.25,
+  "f1_macro": 0.22222222222222224,
+  "f1_weighted": 0.3125,
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "extra_predictions": [
+    "unparsed"
+  ],
+  "unparsed_predictions": 11,
+  "backend": "hf",
+  "base_model": "NousResearch/Llama-2-7b-hf",
+  "adapter_model": "oliverwang15/FinGPT_v32_Llama2_Sentiment_Instruction_LoRA_FT",
+  "dataset_dir": "student_local/data/fpb_full",
+  "max_samples": 32
+}

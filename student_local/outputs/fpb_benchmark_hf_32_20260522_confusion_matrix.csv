@@ -1,0 +1,5 @@
+actual\predicted,negative,neutral,positive,unparsed
+negative,0,3,0,1
+neutral,4,6,4,5
+positive,0,2,2,5
+unparsed,0,0,0,0

@@ -1,0 +1,7 @@
+outputs/
+data/
+__pycache__/
+*.csv
+*.json
+*.jsonl
+*.log
