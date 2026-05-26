@@ -27,11 +27,13 @@
 - 2026-05-21 已验证：`student_local/train_sentiment_qlora.py` 已完成一次最小 QLoRA sanity training，使用 `fpb_mini` 中 8 条训练样本和 4 条评估样本，输出目录为 `student_local/outputs/fpb_qlora_sanity_20260521_am`；脚本完成 tokenize、Trainer 训练、checkpoint/adapter 保存和 reload check。该结果只能证明训练闭环可运行，不能当作正式模型效果指标。
 - 2026-05-22 已验证：`student_local/run_sentiment_benchmark.py` 已补齐 metrics JSON、confusion matrix CSV 和 error cases CSV 输出；HF FinGPT LoRA 在 Financial PhraseBank 固定 seed 测试切分前 32 条样本上的首版 benchmark 结果为 `accuracy=0.2500`、`f1_macro=0.2222`、`f1_weighted=0.3125`、`unparsed_predictions=11`，产物记录在 `student_local/results.md` 和 `student_local/outputs/fpb_benchmark_hf_32_20260522*`。该结果可作为首版真实评估证据，但也暴露出 prompt/输出解析仍需改进。
 - 2026-05-25 已完成 D3 结果固化：`student_local/README.md` 已重写为复现说明入口；`student_local/results.md` 已补强结果索引、benchmark 解读、QLoRA sanity training 边界和面试口径；`student_local/error_cases_20_labeled.csv` 对前 20 条误判样本做人工错误类型标注；`student_local/error_analysis.md` 总结主要错误类型；`student_local/outputs/fpb_benchmark_hf_32_20260522_confusion_matrix.svg` 导出混淆矩阵图表。D3 产物基于已有 32 条 benchmark，不能扩写为大规模系统性实验。
+- 2026-05-26 已新增新闻情绪因子 CSV 生成入口：`student_local/build_news_sentiment_factor.py` 读取 `student_local/news/raw_news.csv` 约定字段，输出逐条新闻 `student_local/outputs/news_sentiment_items.csv` 和日频因子 `student_local/outputs/news_sentiment_daily.csv`。已用 `student_local/news/raw_news_sample.csv` 的 8 条样例跑通 `lexicon` backend，验证输出为 8 条 item、6 条 daily，且 `sentiment_score = prob_positive - prob_negative`。当前样例验证只证明 CSV 契约和聚合逻辑可用，不代表真实 FinGPT 新闻推理质量。
 
 ## 目录约定
 
 - `fingpt/`：上游 FinGPT 代码，尽量保持干净，只在明确需要时修改。
 - `student_local/`：用户本地复现、训练、评估、学习说明、可提交脚本的主要区域。
+- `student_local/news/`：新闻情绪因子输入约定与样例数据；真实输入默认使用 `raw_news.csv`，字段为 `symbol,published_at,title,summary,source,url`。
 - `student_local/data/`：本地数据或切分结果，默认不提交。
 - `student_local/outputs/`：实验输出、日志、checkpoint、图表，默认不提交。
 - `AGENTS.md`：项目自动默认提示词入口。

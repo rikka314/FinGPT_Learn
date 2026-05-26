@@ -418,3 +418,76 @@
 - 优先改 `run_sentiment_benchmark.py` 的 prompt 约束和生成配置，目标是降低 `unparsed_predictions`。
 - 改完后用同一套 32 条样本重新跑 benchmark，与 `fpb_benchmark_hf_32_20260522_metrics.json` 做对比。
 - 如果 `unparsed` 明显下降，再扩大样本或评估本地 sanity adapter。
+
+## 2026-05-26
+
+### News-Gated Technical Fusion：FinGPT 侧新闻因子 CSV
+
+### 本次目标
+
+- 根据 `D:\Downloads\PLAN.md` 执行 News Fusion 前置工作：在 FinGPT 复现仓库中新增新闻情绪因子生成入口。
+- 先用小样本验证 CSV 契约和日频聚合，避免在接口未稳定前直接加载 7B 模型。
+
+### 已完成
+
+- 新增 `student_local/build_news_sentiment_factor.py`：
+  - 读取 `student_local/news/raw_news.csv` 约定字段。
+  - 支持 `lexicon`、`hf`、`ollama` 三种 backend；`lexicon` 用于本地快速接口验证，`hf/ollama` 复用已有情绪推理入口。
+  - 输出逐条新闻情绪结果 `student_local/outputs/news_sentiment_items.csv`。
+  - 输出日频新闻因子 `student_local/outputs/news_sentiment_daily.csv`。
+- 新增 `student_local/news/raw_news_sample.csv`：8 条 AAPL/MSFT/TSLA 样例新闻。
+- 新增 `student_local/news/README.md`：记录输入字段、输出字段、命令和 v1 时间处理限制。
+- 更新 `student_local/README.md` 和 `AI_CONTEXT.md`，记录新闻因子入口和已验证边界。
+
+### 验证记录
+
+- 命令：`python -m py_compile student_local\build_news_sentiment_factor.py`
+  - 作用：检查新闻因子脚本语法。
+  - 结果：通过。
+- 命令：`python student_local\build_news_sentiment_factor.py --input-csv student_local\news\raw_news_sample.csv --backend lexicon`
+  - 作用：用轻量 backend 跑通样例新闻，生成逐条和日频 CSV。
+  - 结果：`raw_news_rows=8`、`items_rows=8`、`daily_rows=6`。
+- 命令：`python -c "import pandas as pd; items=pd.read_csv('student_local/outputs/news_sentiment_items.csv'); daily=pd.read_csv('student_local/outputs/news_sentiment_daily.csv'); print(((items['sentiment_score'].round(10)) == (items['prob_positive']-items['prob_negative']).round(10)).all())"`
+  - 作用：验证 `sentiment_score = prob_positive - prob_negative`。
+  - 结果：`True`。
+
+### 产物路径
+
+- `student_local/build_news_sentiment_factor.py`
+- `student_local/news/raw_news_sample.csv`
+- `student_local/news/README.md`
+- `student_local/outputs/news_sentiment_items.csv`
+- `student_local/outputs/news_sentiment_daily.csv`
+
+### 当前限制
+
+- `lexicon` backend 只是规则基线，用于验证接口和聚合逻辑；不能写成 FinGPT 模型效果。
+- `hf/ollama` backend 当前仍只输出 label，概率列是 label-derived heuristic scores，后续若需要真实概率，需要改成分类模型 logits 或校准分数。
+- v1 时间处理只按日期落到 `trade_date`，未处理盘前/盘后、交易日历和假期。
+
+### Strategy 侧接入记录
+
+- 修改 `D:\Learn\20_Projects\2026_SPRING\AIE1902\课堂内容\stratagy\core\news_factor.py`：
+  - 新增 `apply_news_fusion()`，读取 FinGPT 侧日频新闻因子 CSV。
+  - 按 `symbol + date` 合并到单股 search 上游 `full_signal_df`。
+  - 保留原始 `factor_score`，新增 `fused_factor_score/news_delta/news_gate/news_residual`，并重算 `target_position/buy_signal/sell_signal`。
+- 修改 `stratagy\ui\single_stock_workflow.py`：
+  - `StrategyRequest` 新增 `use_news/news_fusion_mode/news_factor_path/news_weight/news_lookback`。
+  - search 路径执行顺序改为 `SM/FSM base -> optional Parameter Search -> optional News Fusion -> optional ML Filter`。
+  - `News Fusion` 失败时降级回最近成功上游 stage，不中断整个策略生成。
+- 修改 `stratagy\ui\single_stock.py`：
+  - Search 配置区新增 `News Fusion` 开关、CSV 路径、权重和 lookback 控件。
+- 新增 `stratagy\tests\test_news_factor.py`，覆盖 `factor_score` 保留、`fused_factor_score` 新增、`news_weight=0` 等价于上游的核心行为。
+- 更新 `stratagy\AI_CONTEXT.md`、`document/interfaces/single-stock-workflow.md`、`document/interfaces/strategy-pipeline.md`，记录新增 stage 和接口边界。
+
+### Strategy 侧验证记录
+
+- 命令：`python -c "import ast, pathlib; ...; print('syntax_ok')"`
+  - 作用：对 `core/news_factor.py`、`ui/single_stock_workflow.py`、`ui/single_stock.py`、`tests/test_news_factor.py` 做无写入语法解析检查。
+  - 结果：`syntax_ok`。
+- 命令：`python -c "... importlib.util.spec_from_file_location(...); mod.apply_news_fusion(...); ..."`
+  - 作用：在当前 Python 缺少 strategy 完整依赖时，用隔离加载方式验证 `apply_news_fusion()` 的核心逻辑。
+  - 结果：`weight0_target_ok True`，并能读取 FinGPT 侧 `news_sentiment_daily.csv`。
+- 命令：`python -m pytest tests\test_news_factor.py`
+  - 作用：尝试运行新增单元测试。
+  - 结果：当前 Windows Python 环境缺少 `pytest`，报 `No module named pytest`，因此 pytest 未实际运行。

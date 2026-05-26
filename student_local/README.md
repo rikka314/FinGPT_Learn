@@ -88,6 +88,12 @@ python student_local/train_sentiment_qlora.py --output-dir student_local/outputs
 
 用极小样本跑 QLoRA sanity training，验证数据加载、tokenize、Trainer 训练、checkpoint/adapter 保存和 reload check 都能执行。
 
+```bash
+python student_local/build_news_sentiment_factor.py --input-csv student_local/news/raw_news_sample.csv --backend lexicon
+```
+
+读取样例新闻 CSV，生成逐条新闻情绪输出和日频新闻因子 CSV；`lexicon` backend 只用于快速验证字段契约和聚合逻辑，不代表 FinGPT 7B 的真实新闻推理效果。
+
 ## 已验证结果
 
 首版 HF FinGPT LoRA benchmark 已完成，产物见 `student_local/results.md`：
@@ -105,6 +111,7 @@ python student_local/train_sentiment_qlora.py --output-dir student_local/outputs
 - QLoRA sanity training 只用了 8 条训练样本和 4 条评估样本，只能证明训练链路可运行，不能代表正式训练效果。
 - 本机成功加载模型依赖已有 Hugging Face cache；换机器、清空 cache 或重新下载前，需要重新确认 `HF_TOKEN` 和模型访问权限。
 - 当前尚未系统比较不同 prompt、不同解析策略、不同 adapter 或本地训练 adapter 的效果。
+- 新闻因子 v1 只按 `published_at` 的日期映射到 `trade_date`，尚未处理盘前/盘后、交易日历和假期。
 
 ## 可写入简历的谨慎口径
 

@@ -1,0 +1,9 @@
+symbol,published_at,title,summary,source,url
+AAPL,2026-05-18 09:15:00,Apple supplier raises quarterly outlook,Management cited strong demand and margin growth in premium devices,SampleWire,https://example.com/aapl-positive
+AAPL,2026-05-18 14:30:00,Analyst warns of weak iPhone channel checks,The report says replacement demand could fall in the next quarter,SampleWire,https://example.com/aapl-negative
+AAPL,2026-05-19 11:00:00,Apple announces developer conference schedule,The update is mostly operational with no material profit guidance,SampleWire,https://example.com/aapl-neutral
+MSFT,2026-05-18 10:05:00,Microsoft cloud revenue beats expectations,Azure growth and operating profit both exceeded consensus,SampleWire,https://example.com/msft-positive
+MSFT,2026-05-18 15:45:00,Microsoft faces antitrust lawsuit in Europe,Regulators said bundling practices may hurt competition,SampleWire,https://example.com/msft-negative
+MSFT,2026-05-20 08:40:00,Microsoft expands AI data center capacity,The company plans to expand infrastructure after strong enterprise demand,SampleWire,https://example.com/msft-positive-2
+TSLA,2026-05-18 12:00:00,Tesla vehicle deliveries miss estimates,Quarterly deliveries fell below analyst expectations after weak overseas sales,SampleWire,https://example.com/tsla-negative
+TSLA,2026-05-19 09:45:00,Tesla announces battery cost cut,Executives said lower pack costs may improve profit margins,SampleWire,https://example.com/tsla-positive
